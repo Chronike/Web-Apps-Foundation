@@ -1,0 +1,17 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 35rem;
+  margin: 0;
+}
+
+.checkbox-container {
+  text-align: center;
+}
+
+label {
+  margin: 0 10px;
+}
