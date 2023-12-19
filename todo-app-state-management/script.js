@@ -3,6 +3,10 @@
 const todos = document.querySelector("#btn-add");
 const input = document.querySelector("#newTodo");
 const toDoList = document.querySelector("#to-do-list");
+const allFilter = document.querySelector("#all");
+const openFilter = document.querySelector("#open");
+const doneFilter = document.querySelector("#done");
+const removeDoneButton = document.querySelector("#btn-remove");
 let newArray = [];
 
 if (localStorage.getItem("newArray")) {
@@ -10,40 +14,74 @@ if (localStorage.getItem("newArray")) {
   showNewArray();
 }
 
+function isDuplicate(description) {
+  return newArray.some(
+    (todo) => todo.description.toLowerCase() === description.toLowerCase()
+  );
+}
+
 function buttonClick() {
-  const inputtext = input.value;
-  input.value = "";
+  const inputtext = input.value.trim();
+  if (inputtext !== "" && !isDuplicate(inputtext)) {
+    input.value = "";
+    newArray.push({ checkbox: false, description: inputtext, done: false });
+    updateLocalStorage();
+    showNewArray();
+  }
+}
 
-  newArray.push({ checkbox: false, description: inputtext });
+function showNewArray() {
+  toDoList.innerHTML = "";
+  const filteredArray = filterTodos(newArray);
+  for (const objects of filteredArray) {
+    if (objects.description.trim() !== "") {
+      const toDoElement = document.createElement("li");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = objects.done;
+      checkbox.addEventListener("change", function () {
+        objects.done = checkbox.checked;
+        updateLocalStorage();
+        showNewArray();
+      });
+
+      const description = document.createElement("label");
+      description.textContent = objects.description;
+      description.appendChild(checkbox);
+
+      if (objects.done) {
+        description.classList.add("done");
+      }
+
+      toDoElement.appendChild(description);
+      toDoList.appendChild(toDoElement);
+    }
+  }
+}
+
+function filterTodos(todos) {
+  if (openFilter.checked) {
+    return todos.filter((todo) => !todo.done);
+  } else if (doneFilter.checked) {
+    return todos.filter((todo) => todo.done);
+  } else {
+    return todos;
+  }
+}
+
+function removeDoneTodos() {
+  const filteredArray = filterTodos(newArray);
+  newArray = filteredArray.filter((todo) => !todo.done);
+  updateLocalStorage();
   showNewArray();
+}
 
+function updateLocalStorage() {
   localStorage.setItem("newArray", JSON.stringify(newArray));
 }
 
 todos.addEventListener("click", buttonClick);
-
-function showNewArray() {
-  toDoList.innerHTML = "";
-  for (const objects of newArray) {
-    const toDoElement = document.createElement("li");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    const description = document.createElement("label");
-    description.textContent = objects.description;
-
-    description.appendChild(checkbox);
-    toDoElement.appendChild(description);
-    toDoList.appendChild(toDoElement);
-  }
-}
-
-/*const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = todo.done;
-    checkbox.addEventListener("change", () => toggleDone(todo.id));*/
-/*
-function toggleDone(todoId) {
-  const todoIndex = todos.findIndex((todo) => todo.id === todoId);
-  todos[todoIndex].done = !todos[todoIndex].done;
-  renderTodos();
-}*/
+allFilter.addEventListener("change", showNewArray);
+openFilter.addEventListener("change", showNewArray);
+doneFilter.addEventListener("change", showNewArray);
+removeDoneButton.addEventListener("click", removeDoneTodos);
